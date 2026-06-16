@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subject QR | PUP Attendance</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- QR Code Generator Library -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+</head>
+<body>
+  <header>
+    <div class="logo">PUPil Attendance System</div>
+    <nav>
+      <a href="main.html">Back to Subjects</a>
+      <a href="profile.html">My Profile</a>
+      <a href="login.html">Logout</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div class="card" style="text-align: center;">
+      <h2 id="subject-title">Subject QR Code</h2>
+      <p><strong>Section:</strong> <span id="subject-section"></span></p>
+      <p><strong>Schedule:</strong> <span id="subject-schedule"></span></p>
+
+      <!-- QR Code Display -->
+      <div class="qr-box" id="qr-container">
+        <canvas id="qrcode"></canvas>
+      </div>
+
+      <a href="main.html" class="btn btn-outline btn-center">Back to Subjects</a>
+    </div>
+  </div>
+
+  <script>
+    // Get subject details from the link URL
+    const params = new URLSearchParams(window.location.search);
+    const subject = params.get("subject") || "No Subject Selected";
+    const section = params.get("section") || "";
+    const schedule = params.get("schedule") || "";
+
+    // Display details on page
+    document.getElementById("subject-title").textContent = subject;
+    document.getElementById("subject-section").textContent = section;
+    document.getElementById("subject-schedule").textContent = schedule;
+
+    // Generate QR Code containing subject information
+    QRCode.toCanvas(document.getElementById("qrcode"), 
+      `Subject: ${subject}\nSection: ${section}\nSchedule: ${schedule}`, 
+      { width: 240, height: 240, margin: 1 }
+    );
+  </script>
+</body>
+</html>

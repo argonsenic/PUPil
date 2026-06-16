@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mark Attendance | PUP Attendance</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <div class="logo">PUPil Attendance Monitoring System</div>
+    <nav>
+      <a href="main.html">Back to Subjects</a>
+      <a href="profile.html">My Profile</a>
+    </nav>
+  </header>
+
+  <div class="container card">
+    <h2>✍️ Attendance Form</h2>
+    <form>
+      <input type="text" value="IT 101 - Human and Computer Interaction" readonly>
+      <input type="text" placeholder="Your Full Name" required>
+      <input type="text" placeholder="Student ID Number" required>
+      <input type="email" placeholder="Registered Email" required>
+      
+     
+      <select required>
+        <option value="">-- Select Status --</option>
+        <option value="present">Present</option>
+        <option value="late">Late</option>
+        <option value="excused">Excused</option>
+      </select>
+
+      <textarea rows="3" placeholder="Remarks / Reason (if applicable)"></textarea>
+
+      <button type="submit" class="btn">Submit Attendance</button>
+    </form>
+  </div>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile | PUP Attendance</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .profile-container {
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 30px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .profile-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .profile-header h1 {
+      color: #800000;
+      margin-bottom: 10px;
+    }
+
+    .profile-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .info-item {
+      background: #f9f9f9;
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    .info-item label {
+      display: block;
+      font-weight: bold;
+      color: #800000;
+      margin-bottom: 5px;
+    }
+
+    .info-item span {
+      color: #333;
+      font-size: 16px;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+      justify-content: center;
+    }
+
+    .nav-buttons a {
+      background: #800000;
+      color: white;
+      padding: 12px 24px;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .nav-buttons a:hover {
+      background: #a52a2a;
+    }
+
+    .nav-buttons a.logout {
+      background: #333;
+    }
+
+    .nav-buttons a.logout:hover {
+      background: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="profile-container">
+    <div class="profile-header">
+      <h1>👤 My Profile</h1>
+      <p>Student Information</p>
+    </div>
+
+    <div class="profile-info">
+      <div class="info-item">
+        <label>Full Name:</label>
+        <span id="full-name">Loading...</span>
+      </div>
+
+      <div class="info-item">
+        <label>Username:</label>
+        <span id="username">Loading...</span>
+      </div>
+
+      <div class="info-item">
+        <label>Account Code:</label>
+        <span id="account-code">Loading...</span>
+      </div>
+
+      <div class="info-item">
+        <label>Course:</label>
+        <span id="course">Loading...</span>
+      </div>
+
+      <div class="info-item">
+        <label>Year Level:</label>
+        <span id="year-level">Loading...</span>
+      </div>
+
+      <div class="info-item">
+        <label>Section:</label>
+        <span id="section">Loading...</span>
+      </div>
+
+      <div class="info-item">
+        <label>Year & Section:</label>
+        <span id="year-section">Loading...</span>
+      </div>
+
+      <div class="info-item">
+        <label>Student Number:</label>
+        <span id="student-number">Loading...</span>
+      </div>
+
+      <div class="info-item">
+        <label>Phone Number:</label>
+        <span id="phone-number">Loading...</span>
+      </div>
+
+      <div class="info-item">
+        <label>Role:</label>
+        <span id="role">Loading...</span>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <a href="student-dashboard.html">Back to Dashboard</a>
+      <a href="auth/Logout.php" class="logout">Logout</a>
+    </div>
+  </div>
+
+  <script>
+    // Load profile data from session (would normally come from PHP session)
+    document.addEventListener('DOMContentLoaded', function() {
+      // For demo purposes, show placeholder data
+      // In production, this would come from PHP session
+      const profileData = {
+        full_name: 'Student Name',
+        username: 'student',
+        account_code: 'STU_20250616_1234',
+        course: 'BS Information Technology',
+        year_level: '2',
+        section: '5',
+        student_number: '2023-10503-MN-0',
+        phone_number: '09123456789',
+        role: 'student'
+      };
+
+      // Try to get data from localStorage if available (from registration)
+      const storedProfile = localStorage.getItem('studentProfile');
+      if (storedProfile) {
+        try {
+          const parsedProfile = JSON.parse(storedProfile);
+          Object.assign(profileData, parsedProfile);
+        } catch (e) {
+          console.error('Error parsing stored profile:', e);
+        }
+      }
+
+      // Update UI
+      document.getElementById('full-name').textContent = profileData.full_name || 'N/A';
+      document.getElementById('username').textContent = profileData.username || 'N/A';
+      document.getElementById('account-code').textContent = profileData.account_code || 'N/A';
+      document.getElementById('course').textContent = profileData.course || 'N/A';
+      document.getElementById('year-level').textContent = profileData.year_level ? `${profileData.year_level} Year` : 'N/A';
+      document.getElementById('section').textContent = profileData.section ? `Section ${profileData.section}` : 'N/A';
+      document.getElementById('year-section').textContent = profileData.year_level && profileData.section ? `${profileData.year_level}-${profileData.section}` : 'N/A';
+      document.getElementById('student-number').textContent = profileData.student_number || 'N/A';
+      document.getElementById('phone-number').textContent = profileData.phone_number || 'N/A';
+      document.getElementById('role').textContent = profileData.role ? profileData.role.charAt(0).toUpperCase() + profileData.role.slice(1) : 'N/A';
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | PUP Attendance</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="auth-page">
+  <div class="auth-container">
+    <h2>📚 Login to Your Account</h2>
+    <div id="success-message" class="success-message" style="display:none; padding: 12px 16px; background:#e6ffed; color:#14532d; border:1px solid #4ade80; border-radius:8px; margin-bottom:16px;">
+      Registration successful! Please login with your new account.
+    </div>
+    <form action="auth/Login.php" method="POST">
+      <input type="text" name="username" placeholder="Student ID / Email" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <button type="submit" class="btn">Login</button>
+    </form>
+    <a href="register.html" class="link">Don't have an account? Register here</a>
+  </div>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('registered') === '1') {
+      document.getElementById('success-message').style.display = 'block';
+    }
+  </script>
+</body>
+</html>

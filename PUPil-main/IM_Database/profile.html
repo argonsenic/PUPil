@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile | PUP Attendance</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/api.js"></script>
+</head>
+<body>
+  <header>
+    <div class="logo">PUPil Attendance System</div>
+    <nav>
+      <a href="main.html">My Subjects</a>
+      <a href="profile.html">My Profile</a>
+      <a href="login.html">Logout</a>
+    </nav>
+  </header>
+
+  <div class="container card">
+    <h2>👤 Student Profile</h2>
+    <div id="profile-content">
+      <div class="profile-item"><strong>Full Name:</strong> <span id="full-name">Loading...</span></div>
+      <div class="profile-item"><strong>Student ID:</strong> <span id="student-id">Loading...</span></div>
+      <div class="profile-item"><strong>Program:</strong> <span id="program">Loading...</span></div>
+      <div class="profile-item"><strong>Year & Section:</strong> <span id="year-section">Loading...</span></div>
+      <div class="profile-item"><strong>Email:</strong> <span id="email">Loading...</span></div>
+      <div class="profile-item"><strong>Total Attendance Rate:</strong> <span id="attendance-rate">Loading...</span></div>
+    </div>
+
+    <button class="btn" onclick="window.location.href='edit-profile.html'">Edit Profile</button>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      if (!requireAuth()) {
+        return;
+      }
+
+      const user = getUser();
+      if (user && user.profile) {
+        // Load profile data from localStorage
+        document.getElementById('full-name').textContent = user.full_name || 'N/A';
+        document.getElementById('student-id').textContent = user.account_code || 'N/A';
+        document.getElementById('program').textContent = user.profile.course || 'N/A';
+        document.getElementById('year-section').textContent = `${user.profile.year_level || 'N/A'} Year - ${user.profile.section || 'N/A'}`;
+        document.getElementById('email').textContent = user.username || 'N/A';
+        
+        // Calculate attendance rate (placeholder for now)
+        document.getElementById('attendance-rate').textContent = 'Calculating...';
+        
+        // TODO: Load actual attendance data from API
+        try {
+          // When attendance endpoint is ready, load actual data
+          // const attendanceData = await getAttendance(user.profile.id);
+          // document.getElementById('attendance-rate').textContent = calculateAttendanceRate(attendanceData) + '%';
+          document.getElementById('attendance-rate').textContent = '92%';
+        } catch (error) {
+          console.error('Error loading attendance:', error);
+          document.getElementById('attendance-rate').textContent = 'N/A';
+        }
+      }
+    });
+  </script>
+</body>
+</html>

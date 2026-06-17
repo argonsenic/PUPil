@@ -41,9 +41,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $form_data['middle_name'] = trim($_POST['middle_name'] ?? '');
     $form_data['last_name'] = trim($_POST['last_name'] ?? '');
     $form_data['suffix_name'] = trim($_POST['suffix_name'] ?? '');
+    $form_data['role'] = trim($_POST['role'] ?? 'student');
     $form_data['course'] = trim($_POST['course'] ?? '');
     $form_data['year_level'] = (int)($_POST['year_level'] ?? 0);
     $form_data['student_number'] = trim($_POST['student_number'] ?? '');
+    $form_data['instructor_id'] = trim($_POST['instructor_id'] ?? '');
     $form_data['phone_number'] = trim($_POST['phone_number'] ?? '');
     $form_data['section'] = '2-5'; // Fixed section for 2-5 year level
     
@@ -74,18 +76,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = "Last name is required";
     }
     
-    if (empty($form_data['course'])) {
+    // Course is only required for students
+    if ($form_data['role'] === 'student' && empty($form_data['course'])) {
         $errors[] = "Course is required";
     }
     
-    if (empty($form_data['year_level']) || $form_data['year_level'] < 1 || $form_data['year_level'] > 4) {
-        $errors[] = "Valid year level (1-4) is required";
+    // Role-specific validation
+    if ($form_data['role'] === 'student') {
+        if (empty($form_data['year_level']) || $form_data['year_level'] < 1 || $form_data['year_level'] > 4) {
+            $errors[] = "Valid year level (1-4) is required";
+        }
+        if (empty($form_data['student_number'])) {
+            $errors[] = "Student number is required";
+        }
+        // Student number format is flexible - just needs to be non-empty
+    } elseif ($form_data['role'] === 'instructor') {
+        if (empty($form_data['instructor_id'])) {
+            $errors[] = "Instructor ID is required";
+        }
+        // Instructor ID format is flexible - accepts anything
     }
-
-    if (empty($form_data['student_number'])) {
-        $errors[] = "Student number is required";
+    
+    // Check for duplicate student number
+    if (!empty($form_data['student_number']) && empty($errors)) {
+        try {
+            $check_sql = "SELECT id FROM student_profiles WHERE student_number = '" . pg_escape_string($conn, $form_data['student_number']) . "'";
+            $check_stmt = db_query($conn, $check_sql);
+            if ($check_stmt === false) {
+                throw new Exception('Student number check query failed');
+            }
+            $existing_student = db_fetch_assoc($check_stmt);
+            if ($existing_student) {
+                $errors[] = "Student number already registered";
+            }
+        } catch (Exception $e) {
+            $errors[] = "Database error: " . $e->getMessage();
+        }
     }
-    // Student number format is flexible - just needs to be non-empty
     
     // Check if username exists (skip for now to isolate issue)
     // if (empty($errors)) {
@@ -115,31 +142,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $transactionStarted = true;
             
-            // Get student role ID
-            $role_sql = "SELECT id FROM roles WHERE role = 'student'";
+            // Get role ID based on selected role
+            $role_sql = "SELECT id FROM roles WHERE role = '" . pg_escape_string($conn, $form_data['role']) . "'";
             $role_stmt = db_query($conn, $role_sql);
             if ($role_stmt === false) {
                 throw new Exception('Failed to retrieve role information');
             }
             $role_row = db_fetch_assoc($role_stmt);
             if (!$role_row) {
-                // Create the student role if it does not exist yet
-                $insert_role_sql = "INSERT INTO roles (role) VALUES ('student') RETURNING id";
+                // Create the role if it does not exist yet
+                $insert_role_sql = "INSERT INTO roles (role) VALUES ('" . pg_escape_string($conn, $form_data['role']) . "') RETURNING id";
                 $insert_role_stmt = db_query($conn, $insert_role_sql);
                 if ($insert_role_stmt === false) {
-                    throw new Exception('Failed to create missing student role');
+                    throw new Exception('Failed to create missing role');
                 }
                 $scope_row = db_fetch_assoc($insert_role_stmt);
                 if (!$scope_row || empty($scope_row['id'])) {
-                    throw new Exception('Student role creation returned no ID');
+                    throw new Exception('Role creation returned no ID');
                 }
                 $role_id = $scope_row['id'];
             } else {
                 $role_id = $role_row['id'];
             }
             
-            // Generate account code
-            $account_code = 'STU_' . date('Ymd') . '_' . rand(1000, 9999);
+            // Generate account code based on role
+            $role_prefix = $form_data['role'] === 'instructor' ? 'INS' : 'STU';
+            $account_code = $role_prefix . '_' . date('Ymd') . '_' . rand(1000, 9999);
             
             // Hash password
             $password_hash = password_hash($form_data['password'], PASSWORD_DEFAULT);
@@ -158,14 +186,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $user_id = $id_row['id'];
             
-            // Insert into student_profiles
-            $profile_sql = "INSERT INTO student_profiles 
-                            (first_name, middle_name, last_name, suffix_name, 
-                             course, year_level, student_number, phone_number, account_id) 
-                            VALUES ('" . pg_escape_string($conn, $form_data['first_name']) . "', '" . pg_escape_string($conn, $form_data['middle_name']) . "', '" . pg_escape_string($conn, $form_data['last_name']) . "', '" . pg_escape_string($conn, $form_data['suffix_name']) . "', '" . pg_escape_string($conn, $form_data['course']) . "', '" . pg_escape_string($conn, $form_data['year_level']) . "', '" . pg_escape_string($conn, $form_data['student_number']) . "', '" . pg_escape_string($conn, $form_data['phone_number']) . "', '" . pg_escape_string($conn, $user_id) . "')";
-            $profile_stmt = db_query($conn, $profile_sql);
-            if ($profile_stmt === false) {
-                throw new Exception('Failed to insert student profile');
+            // Insert into appropriate profile table based on role
+            if ($form_data['role'] === 'student') {
+                $profile_sql = "INSERT INTO student_profiles 
+                                (first_name, middle_name, last_name, suffix_name, 
+                                 course, year_level, student_number, phone_number, account_id) 
+                                VALUES ('" . pg_escape_string($conn, $form_data['first_name']) . "', '" . pg_escape_string($conn, $form_data['middle_name']) . "', '" . pg_escape_string($conn, $form_data['last_name']) . "', '" . pg_escape_string($conn, $form_data['suffix_name']) . "', '" . pg_escape_string($conn, $form_data['course']) . "', '" . pg_escape_string($conn, $form_data['year_level']) . "', '" . pg_escape_string($conn, $form_data['student_number']) . "', '" . pg_escape_string($conn, $form_data['phone_number']) . "', '" . pg_escape_string($conn, $user_id) . "')";
+                $profile_stmt = db_query($conn, $profile_sql);
+                if ($profile_stmt === false) {
+                    throw new Exception('Failed to insert student profile');
+                }
+            } elseif ($form_data['role'] === 'instructor') {
+                // For instructors, store instructor_id in student_number field for now
+                // (or create a separate instructor_profiles table if needed)
+                $profile_sql = "INSERT INTO student_profiles 
+                                (first_name, middle_name, last_name, suffix_name, 
+                                 student_number, phone_number, account_id) 
+                                VALUES ('" . pg_escape_string($conn, $form_data['first_name']) . "', '" . pg_escape_string($conn, $form_data['middle_name']) . "', '" . pg_escape_string($conn, $form_data['last_name']) . "', '" . pg_escape_string($conn, $form_data['suffix_name']) . "', '" . pg_escape_string($conn, $form_data['instructor_id']) . "', '" . pg_escape_string($conn, $form_data['phone_number']) . "', '" . pg_escape_string($conn, $user_id) . "')";
+                $profile_stmt = db_query($conn, $profile_sql);
+                if ($profile_stmt === false) {
+                    throw new Exception('Failed to insert instructor profile');
+                }
             }
             
             // Commit database changes
@@ -173,9 +214,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception('Failed to commit transaction');
             }
             
-            // Handle redirect after registration
-            $redirect = isset($_POST['redirect']) ? $_POST['redirect'] : '../login.html';
-            header('Location: ' . $redirect . '?registered=1');
+            // Always redirect to login after registration
+            header('Location: ../login.html?registered=1');
             exit();
         } catch (Exception $e) {
             // Roll back database if anything fails

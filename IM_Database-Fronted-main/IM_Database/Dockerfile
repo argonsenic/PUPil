@@ -10,6 +10,9 @@ RUN apt-get update && apt-get install -y \
 RUN sed -i 's/Listen 80/Listen 10000/g' /etc/apache2/ports.conf
 RUN sed -i 's/<VirtualHost \*:80>/<VirtualHost \*:10000>/g' /etc/apache2/sites-available/000-default.conf
 
+# 🛠️ FIX: Directs Apache to treat login.html as the root homepage
+RUN echo "DirectoryIndex login.html" >> /etc/apache2/apache2.conf
+
 # Enable Apache rewrite module for clean routing
 RUN a2enmod rewrite
 

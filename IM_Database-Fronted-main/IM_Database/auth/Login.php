@@ -97,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         header("Location: ../student-dashboard.html");
                         
                     } elseif ($user['role'] === 'instructor') {
-                        $profile_sql = "SELECT * FROM instructor_profiles WHERE account_id = '" . pg_escape_string($conn, $user['id']) . "'";
+                        $profile_sql = "SELECT * FROM student_profiles WHERE account_id = '" . pg_escape_string($conn, $user['id']) . "'";
                         $p_stmt = db_query($conn, $profile_sql);
                         if ($p_stmt === false) {
                             throw new Exception('Failed to retrieve instructor profile');
@@ -108,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $_SESSION['profile'] = $profile;
                             $_SESSION['full_name'] = $profile['first_name'] . ' ' . $profile['last_name'];
                         }
-                        header("Location: ../../instructor/dashboard.php");
+                        header("Location: ../instructor-dashboard.html");
                         
                     } elseif ($user['role'] === 'admin') {
                         $_SESSION['full_name'] = 'Administrator';

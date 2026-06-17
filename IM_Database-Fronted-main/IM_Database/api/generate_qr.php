@@ -57,8 +57,19 @@ try {
     
     $qr_id = $qr_row['id'];
     
-    // Generate QR code URL
-    $attendance_url = "https://pup-attendance-system.onrender.com/attendance.html?qr=" . urlencode($qr_code) . "&subject=" . urlencode($subject['subject_code']);
+    // Generate QR code URL using current domain or configured base URL
+    $base_url = getenv('BASE_URL') ?: $_SERVER['HTTP_HOST'];
+    
+    // On Render, use HTTPS automatically
+    $protocol = 'https';
+    
+    // If testing locally, use local network IP instead of localhost
+    if ($base_url === 'localhost' || $base_url === '127.0.0.1') {
+        $base_url = '192.168.1.6'; // Your local network IP
+        $protocol = 'http';
+    }
+    
+    $attendance_url = "$protocol://$base_url/attendance-form.html?qr=" . urlencode($qr_code) . "&subject=" . urlencode($subject['subject_code']);
     $qr_api_url = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" . urlencode($attendance_url);
     
     echo json_encode([

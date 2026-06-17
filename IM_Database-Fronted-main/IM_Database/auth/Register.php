@@ -22,7 +22,14 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 // Redirect if already logged in
 if (isset($_SESSION['user_id'])) {
-    header("Location: ../../student/dashboard.php");
+    // Redirect based on role
+    if ($_SESSION['role'] === 'admin') {
+        header("Location: ../admin-dashboard.html");
+    } elseif ($_SESSION['role'] === 'instructor') {
+        header("Location: ../instructor-dashboard.html");
+    } elseif ($_SESSION['role'] === 'student') {
+        header("Location: ../student-dashboard.html");
+    }
     exit();
 }
 

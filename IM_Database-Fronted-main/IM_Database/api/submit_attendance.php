@@ -37,6 +37,12 @@ try {
                  AND qc.expires_at > NOW()";
     
     $qr_result = db_query($conn, $qr_query);
+    
+    if ($qr_result === false) {
+        echo json_encode(['success' => false, 'message' => 'Database query failed: ' . db_error($conn)]);
+        exit;
+    }
+    
     $qr_data = db_fetch_assoc($qr_result);
     
     if (!$qr_data) {
@@ -50,6 +56,12 @@ try {
                     AND student_number = '" . pg_escape_string($conn, $student_number) . "'";
     
     $check_result = db_query($conn, $check_query);
+    
+    if ($check_result === false) {
+        echo json_encode(['success' => false, 'message' => 'Database check query failed: ' . db_error($conn)]);
+        exit;
+    }
+    
     $existing = db_fetch_assoc($check_result);
     
     if ($existing) {
@@ -67,10 +79,16 @@ try {
                      '" . pg_escape_string($conn, $_SERVER['REMOTE_ADDR']) . "') RETURNING id";
     
     $insert_result = db_query($conn, $insert_query);
+    
+    if ($insert_result === false) {
+        echo json_encode(['success' => false, 'message' => 'Database insert failed: ' . db_error($conn)]);
+        exit;
+    }
+    
     $attendance_row = db_fetch_assoc($insert_result);
     
     if (!$attendance_row) {
-        echo json_encode(['success' => false, 'message' => 'Failed to submit attendance']);
+        echo json_encode(['success' => false, 'message' => 'Failed to get attendance ID']);
         exit;
     }
     

@@ -32,6 +32,28 @@ if (empty($qr_code) || empty($student_number) || empty($student_name)) {
 }
 
 try {
+    // Get student_id from student_profiles table based on student_number
+    $student_query = "SELECT sp.id as profile_id, u.id as user_id 
+                     FROM student_profiles sp 
+                     JOIN users u ON sp.account_id = u.id 
+                     WHERE sp.student_number = '" . pg_escape_string($conn, $student_number) . "'";
+    
+    $student_result = db_query($conn, $student_query);
+    
+    if ($student_result === false) {
+        echo json_encode(['success' => false, 'message' => 'Database student query failed: ' . db_error($conn)]);
+        exit;
+    }
+    
+    $student_data = db_fetch_assoc($student_result);
+    
+    if (!$student_data) {
+        echo json_encode(['success' => false, 'message' => 'Student not found. Please register first.']);
+        exit;
+    }
+    
+    $student_id = $student_data['user_id'];
+    
     // Check if QR code exists and is valid
     $qr_query = "SELECT qc.id, qc.subject_id, qc.expires_at, s.subject_code, s.subject_name 
                  FROM qr_codes qc 
@@ -57,7 +79,7 @@ try {
     // Check if student already submitted for this QR code
     $check_query = "SELECT id FROM attendance_records 
                     WHERE qr_code_id = " . pg_escape_string($conn, $qr_data['id']) . " 
-                    AND student_number = '" . pg_escape_string($conn, $student_number) . "'";
+                    AND student_id = " . pg_escape_string($conn, $student_id);
     
     $check_result = db_query($conn, $check_query);
     
@@ -73,10 +95,11 @@ try {
         exit;
     }
     
-    // Insert attendance record (student_id removed to avoid foreign key constraint)
+    // Insert attendance record with student_id
     $insert_query = "INSERT INTO attendance_records 
-                     (qr_code_id, subject_id, student_number, student_name, ip_address) 
+                     (qr_code_id, student_id, subject_id, student_number, student_name, ip_address) 
                      VALUES (" . pg_escape_string($conn, $qr_data['id']) . ", 
+                     " . pg_escape_string($conn, $student_id) . ", 
                      " . pg_escape_string($conn, $qr_data['subject_id']) . ", 
                      '" . pg_escape_string($conn, $student_number) . "', 
                      '" . pg_escape_string($conn, $student_name) . "', 

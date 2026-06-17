@@ -259,43 +259,56 @@
   </div>
 
   <script>
-    function generateQR(subjectName, subjectCode) {
-      const modal = document.getElementById('qrModal');
-      const subjectTitle = document.getElementById('qrSubject');
-      const qrCode = document.getElementById('qrCode');
-      
-      subjectTitle.textContent = subjectName;
-      
-      // Generate a simple QR code URL (using a free QR code API)
-      const attendanceUrl = `http://localhost:8000/IM_Database/attendance.html?subject=${encodeURIComponent(subjectName)}&code=${encodeURIComponent(subjectCode)}`;
-      qrCode.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(attendanceUrl)}" alt="QR Code" style="width:200px;height:200px;">`;
-      
-      modal.classList.add('active');
+    <script>
+    // Get subject details from the link URL
+    const params = new URLSearchParams(window.location.search);
+    const subject = params.get("subject") || "No Subject Selected";
+    const section = params.get("section") || "";
+    const schedule = params.get("schedule") || "";
+    
+    // Display details on page
+    document.getElementById("subject-title").textContent = subject;
+    document.getElementById("subject-section").textContent = section;
+    document.getElementById("subject-schedule").textContent = schedule;
+    
+  /**
+   * Generates a unique token that changes every 24 hours (daily)
+   * This prevents students from reusing yesterday's screenshots.
+   */
+    function generateDailyToken() {
+    const now = new Date();
+    // Get total days since Jan 1, 1970 UTC
+    const totalDays = Math.floor(now.getTime() / (1000 * 60 * 60 * 24));
+    
+    // A secret key to mix with the date (must match your attendance page secret)
+    const secretSalt = "PUP_ATTENDANCE_SECRET_2026"; 
+    
+    // Simple hash calculation to generate an unpredictable 6-digit token
+    const stringToHash = `${totalDays}_${secretSalt}`;
+    let hash = 0;
+    for (let i = 0; i < stringToHash.length; i++) {
+      hash = (hash << 5) - hash + stringToHash.charCodeAt(i);
+      hash |= 0; // Convert to 32bit integer
     }
-
-    function closeQRModal() {
-      document.getElementById('qrModal').classList.remove('active');
+    return Math.abs(hash % 900000 + 100000); // Ensures a 6-digit number
     }
-
-    function showAttendanceResponses() {
-      const attendanceRecords = JSON.parse(localStorage.getItem('attendanceRecords') || '[]');
-      
-      if (attendanceRecords.length === 0) {
-        alert('No attendance responses yet.');
-        return;
-      }
-      
-      let responseText = 'Attendance Responses:\n\n';
-      attendanceRecords.forEach((record, index) => {
-        responseText += `${index + 1}. ${record.studentName} (${record.studentNumber})\n`;
-        responseText += `   Subject: ${record.subject}\n`;
-        responseText += `   Course: ${record.course}\n`;
-        responseText += `   Year Level: ${record.yearLevel}\n`;
-        responseText += `   Time: ${new Date(record.timestamp).toLocaleString()}\n\n`;
-      });
-      
-      alert(responseText);
-    }
+    
+    // Generate the changing token
+    const dailyToken = generateDailyToken();
+    
+    // CHANGE THIS: Put the actual URL of your attendance form page here
+    const baseAttendanceUrl = "https://yourdomain.com";
+    
+    // Build the URL payload with parameters
+    // EncodeURIComponent handles spaces and special characters safely in URLs
+    const qrPayload = `${baseAttendanceUrl}?subject=${encodeURIComponent(subject)}&section=${encodeURIComponent(section)}&schedule=${encodeURIComponent(schedule)}&token=${dailyToken}`;
+    
+    // Generate the changing QR Code containing the link
+    QRCode.toCanvas(document.getElementById("qrcode"), qrPayload, { 
+    width: 240, 
+    height: 240, 
+    margin: 1 
+  });
   </script>
 </body>
 </html>

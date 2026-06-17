@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instructor Dashboard | PUP Attendance</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .dashboard-container {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .dashboard-header h1 {
+      color: #800000;
+      margin: 0;
+    }
+
+    .subject-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .subject-tab {
+      padding: 10px 20px;
+      background: white;
+      border: 2px solid #800000;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .subject-tab:hover {
+      background: #800000;
+      color: white;
+    }
+
+    .subject-tab.active {
+      background: #800000;
+      color: white;
+    }
+
+    .attendance-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .attendance-table th {
+      background: #800000;
+      color: white;
+      padding: 15px;
+      text-align: left;
+      font-weight: bold;
+    }
+
+    .attendance-table td {
+      padding: 15px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .attendance-table tr:hover {
+      background: #f9f9f9;
+    }
+
+    .status-present {
+      color: #22c55e;
+      font-weight: bold;
+    }
+
+    .status-absent {
+      color: #ef4444;
+      font-weight: bold;
+    }
+
+    .status-late {
+      color: #f59e0b;
+      font-weight: bold;
+    }
+
+    .no-data {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .nav-buttons a {
+      padding: 10px 20px;
+      background: #800000;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .nav-buttons a:hover {
+      background: #a52a2a;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <div class="dashboard-header">
+      <div>
+        <h1>👨‍🏫 Instructor Dashboard</h1>
+        <p>View attendance submissions by subject</p>
+      </div>
+      <div class="nav-buttons">
+        <a href="profile.html">My Profile</a>
+        <a href="auth/Logout.php" class="logout">Logout</a>
+      </div>
+    </div>
+
+    <div id="loading" class="loading">Loading attendance data...</div>
+
+    <div id="dashboard-content" style="display:none;">
+      <div class="subject-tabs" id="subject-tabs">
+        <!-- Subject tabs will be dynamically generated -->
+      </div>
+
+      <div id="attendance-display">
+        <!-- Attendance table will be dynamically generated -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async function() {
+      try {
+        // Check if user is logged in and is an instructor
+        const response = await fetch('auth/check_session.php');
+        const result = await response.json();
+
+        if (!result.logged_in) {
+          window.location.href = 'login.html';
+          return;
+        }
+
+        if (result.user.role !== 'instructor') {
+          alert('Access denied. Instructor dashboard is for instructors only.');
+          window.location.href = 'student-dashboard.html';
+          return;
+        }
+
+        // Load attendance data
+        await loadAttendanceData();
+      } catch (error) {
+        console.error('Error loading dashboard:', error);
+        document.getElementById('loading').innerHTML = 'Error loading dashboard. Please refresh.';
+      }
+    });
+
+    async function loadAttendanceData() {
+      try {
+        const response = await fetch('api/get_attendance.php');
+        const result = await response.json();
+
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('dashboard-content').style.display = 'block';
+
+        if (result.success && result.attendance.length > 0) {
+          // Group attendance by subject
+          const attendanceBySubject = {};
+          result.attendance.forEach(record => {
+            const subjectKey = `${record.subject_code} - ${record.subject_name}`;
+            if (!attendanceBySubject[subjectKey]) {
+              attendanceBySubject[subjectKey] = {
+                subject_code: record.subject_code,
+                subject_name: record.subject_name,
+                records: []
+              };
+            }
+            attendanceBySubject[subjectKey].records.push(record);
+          });
+
+          // Create subject tabs
+          const tabsContainer = document.getElementById('subject-tabs');
+          const subjects = Object.keys(attendanceBySubject);
+          
+          subjects.forEach((subject, index) => {
+            const tab = document.createElement('div');
+            tab.className = 'subject-tab' + (index === 0 ? ' active' : '');
+            tab.textContent = subject;
+            tab.onclick = () => showSubjectAttendance(subject, attendanceBySubject);
+            tabsContainer.appendChild(tab);
+          });
+
+          // Show first subject by default
+          if (subjects.length > 0) {
+            showSubjectAttendance(subjects[0], attendanceBySubject);
+          }
+        } else {
+          document.getElementById('attendance-display').innerHTML = 
+            '<div class="no-data">No attendance submissions found yet.</div>';
+        }
+      } catch (error) {
+        console.error('Error fetching attendance:', error);
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('dashboard-content').style.display = 'block';
+        document.getElementById('attendance-display').innerHTML = 
+          '<div class="no-data">Error loading attendance data. Please try again.</div>';
+      }
+    }
+
+    function showSubjectAttendance(subjectKey, attendanceBySubject) {
+      // Update active tab
+      document.querySelectorAll('.subject-tab').forEach(tab => {
+        tab.classList.remove('active');
+        if (tab.textContent === subjectKey) {
+          tab.classList.add('active');
+        }
+      });
+
+      // Generate attendance table
+      const subjectData = attendanceBySubject[subjectKey];
+      const displayContainer = document.getElementById('attendance-display');
+      
+      let tableHTML = `
+        <table class="attendance-table">
+          <thead>
+            <tr>
+              <th>Student Name</th>
+              <th>Student Number</th>
+              <th>Submission Time</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      subjectData.records.forEach(record => {
+        const statusClass = record.status ? `status-${record.status.toLowerCase()}` : '';
+        const submissionTime = new Date(record.submission_time).toLocaleString();
+        
+        tableHTML += `
+          <tr>
+            <td>${record.student_name}</td>
+            <td>${record.student_number}</td>
+            <td>${submissionTime}</td>
+            <td class="${statusClass}">${record.status || 'Present'}</td>
+          </tr>
+        `;
+      });
+
+      tableHTML += `
+          </tbody>
+        </table>
+      `;
+
+      displayContainer.innerHTML = tableHTML;
+    }
+  </script>
+</body>
+</html>

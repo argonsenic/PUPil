@@ -16,10 +16,6 @@ RUN a2enmod rewrite
 # Copy all your project files into the Apache web directory
 COPY . /var/www/html/
 
-# Optional: Apply your custom php.ini configurations if Apache needs them
-RUN cp /var/www/html/php.ini $PHP_INI_DIR/php.ini-production \
-    && cp /var/www/html/php.ini $PHP_INI_DIR/php.ini
-
 # Ensure proper permissions for Apache web server files
 RUN chown -R www-data:www-data /var/www/html/
 

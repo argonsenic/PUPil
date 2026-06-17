@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mark Attendance | PUP Attendance</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <div class="logo">PUPil Attendance Monitoring System</div>
+    <nav>
+      <a href="main.html">Back to Subjects</a>
+      <a href="profile.html">My Profile</a>
+    </nav>
+  </header>
+
+  <div class="container card">
+    <h2>✍️ Attendance Form</h2>
+    <form id="attendanceForm">
+      <input type="hidden" id="subjectIdInput" name="subject_id">
+      <input type="hidden" id="studentIdInput" name="student_id">
+      <input type="hidden" id="recordTypeInput" name="record_type" value="Log-in">
+
+      <div class="form-group">
+        <label for="subjectField">Subject</label>
+        <input type="text" id="subjectField" placeholder="Subject will appear here" readonly>
+      </div>
+
+      <div class="form-group">
+        <label for="sectionField">Section</label>
+        <input type="text" id="sectionField" placeholder="Section will appear here" readonly>
+      </div>
+
+      <div class="form-group">
+        <label for="scheduleField">Schedule</label>
+        <input type="text" id="scheduleField" placeholder="Schedule will appear here" readonly>
+      </div>
+
+      <div class="form-group">
+        <label for="yourfullnameField">Your Full Name</label>
+        <input type="text" id="yourfullnameField" placeholder="Your Full Name will appear here" readonly>
+      </div>
+
+      <div class="form-group">
+        <label for="studentidField">Student ID</label>
+        <input type="text" id="studentidField" placeholder="Student ID Number will appear here" readonly>
+      </div>
+
+      <div class="form-group">
+        <label for="emailField">Registered Email</label>
+        <input type="text" id="emailField" placeholder="Registered Email will appear here" readonly>
+      </div>
+
+      <div class="form-group">
+        <label for="statusInput">Attendance Status</label>
+        <select id="statusInput" required>
+          <option value="">-- Select Status --</option>
+          <option value="present">Present</option>
+          <option value="late">Late</option>
+          <option value="absent">Absent</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="remarksInput">Remarks / Reason</label>
+        <textarea id="remarksInput" rows="3" placeholder="Optional remarks (not saved in current attendance record)"></textarea>
+      </div>
+
+      <button type="submit" class="btn">Submit Attendance</button>
+      <div id="attendanceMessage" class="message"></div>
+    </form>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const params = new URLSearchParams(window.location.search);
+      const subjectId = params.get('subject_id');
+      const subject = params.get('subject') || '';
+      const section = params.get('section') || '';
+      const schedule = params.get('schedule') || '';
+
+      const user = getUser();
+      if (!user) {
+        redirectToLogin(window.location.href);
+        return;
+      }
+
+      if (!subjectId || !subject) {
+        document.getElementById('attendanceMessage').textContent = 'Invalid attendance link. Please scan the correct QR code.';
+        document.getElementById('attendanceForm').querySelector('button[type="submit"]').disabled = true;
+        return;
+      }
+
+      document.getElementById('subjectIdInput').value = subjectId;
+      document.getElementById('subjectField').value = subject;
+      document.getElementById('sectionField').value = section ? `Section: ${section}` : 'Section not available';
+      document.getElementById('scheduleField').value = schedule ? `Schedule: ${schedule}` : 'Schedule not available';
+      document.getElementById('studentIdInput').value = user.profile?.id || '';
+      document.getElementById('yourfullnameField').value = user.full_name || `${user.profile?.first_name || ''} ${user.profile?.last_name || ''}`.trim();
+      document.getElementById('studentidField').value = user.account_code || 'N/A';
+      document.getElementById('emailField').value = user.username || 'N/A';
+    });
+
+    document.getElementById('attendanceForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const subjectId = document.getElementById('subjectIdInput').value;
+      const studentId = document.getElementById('studentIdInput').value;
+      const status = document.getElementById('statusInput').value;
+      const messageElement = document.getElementById('attendanceMessage');
+
+      if (!subjectId || !studentId || !status) {
+        messageElement.textContent = 'Please make sure all required fields are filled and you are logged in.';
+        return;
+      }
+
+      messageElement.textContent = '';
+      messageElement.className = 'message';
+
+      const attendanceData = {
+        student_id: parseInt(studentId, 10),
+        subject_id: parseInt(subjectId, 10),
+        record_type: 'Log-in',
+        status: status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()
+      };
+
+      try {
+        const result = await logAttendance(attendanceData);
+        if (result.success) {
+          messageElement.textContent = '✅ Attendance submitted successfully.';
+          messageElement.classList.add('success');
+          document.getElementById('statusInput').selectedIndex = 0;
+          document.getElementById('remarksInput').value = '';
+        }
+      } catch (error) {
+        console.error('Attendance submit error:', error);
+        messageElement.textContent = '❌ Failed to submit attendance. Please try again.';
+        messageElement.classList.add('error');
+      }
+    });
+  </script>
+</body>
+</html>

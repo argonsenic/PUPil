@@ -343,7 +343,7 @@
         console.error('Error submitting attendance:', error);
         document.getElementById('loading').style.display = 'none';
         document.getElementById('attendance-form').style.display = 'block';
-        showError('Error submitting attendance. Please try again.');
+        showError('Error submitting attendance: ' + (error.message || 'Please try again.'));
       }
     });
 

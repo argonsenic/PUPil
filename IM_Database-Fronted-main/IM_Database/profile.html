@@ -144,44 +144,37 @@
   </div>
 
   <script>
-    // Load profile data from session (would normally come from PHP session)
-    document.addEventListener('DOMContentLoaded', function() {
-      // For demo purposes, show placeholder data
-      // In production, this would come from PHP session
-      const profileData = {
-        full_name: 'Student Name',
-        username: 'student',
-        account_code: 'STU_20250616_1234',
-        course: 'BS Information Technology',
-        year_level: '2',
-        section: '5',
-        student_number: '2023-10503-MN-0',
-        phone_number: '09123456789',
-        role: 'student'
-      };
+    // Load profile data from PHP session
+    document.addEventListener('DOMContentLoaded', async function() {
+      try {
+        const response = await fetch('auth/check_session.php');
+        const result = await response.json();
 
-      // Try to get data from localStorage if available (from registration)
-      const storedProfile = localStorage.getItem('studentProfile');
-      if (storedProfile) {
-        try {
-          const parsedProfile = JSON.parse(storedProfile);
-          Object.assign(profileData, parsedProfile);
-        } catch (e) {
-          console.error('Error parsing stored profile:', e);
+        if (result.logged_in && result.user) {
+          const user = result.user;
+          const profile = user.profile || {};
+
+          // Update UI with actual user data
+          document.getElementById('full-name').textContent = user.full_name || 
+            `${profile.first_name || ''} ${profile.middle_name || ''} ${profile.last_name || ''}`.trim() || 'N/A';
+          document.getElementById('username').textContent = user.username || 'N/A';
+          document.getElementById('account-code').textContent = user.account_code || profile.student_number || 'N/A';
+          document.getElementById('course').textContent = profile.course || 'N/A';
+          document.getElementById('year-level').textContent = profile.year_level ? `${profile.year_level} Year` : 'N/A';
+          document.getElementById('section').textContent = profile.section ? `Section ${profile.section}` : 'N/A';
+          document.getElementById('year-section').textContent = profile.year_level && profile.section ? `${profile.year_level}-${profile.section}` : 'N/A';
+          document.getElementById('student-number').textContent = profile.student_number || 'N/A';
+          document.getElementById('phone-number').textContent = profile.phone_number || 'N/A';
+          document.getElementById('role').textContent = user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'N/A';
+        } else {
+          // Not logged in, redirect to login
+          window.location.href = 'login.html';
         }
+      } catch (error) {
+        console.error('Error loading profile:', error);
+        document.getElementById('full-name').textContent = 'Error loading profile';
+        document.getElementById('username').textContent = 'Error';
       }
-
-      // Update UI
-      document.getElementById('full-name').textContent = profileData.full_name || 'N/A';
-      document.getElementById('username').textContent = profileData.username || 'N/A';
-      document.getElementById('account-code').textContent = profileData.account_code || 'N/A';
-      document.getElementById('course').textContent = profileData.course || 'N/A';
-      document.getElementById('year-level').textContent = profileData.year_level ? `${profileData.year_level} Year` : 'N/A';
-      document.getElementById('section').textContent = profileData.section ? `Section ${profileData.section}` : 'N/A';
-      document.getElementById('year-section').textContent = profileData.year_level && profileData.section ? `${profileData.year_level}-${profileData.section}` : 'N/A';
-      document.getElementById('student-number').textContent = profileData.student_number || 'N/A';
-      document.getElementById('phone-number').textContent = profileData.phone_number || 'N/A';
-      document.getElementById('role').textContent = profileData.role ? profileData.role.charAt(0).toUpperCase() + profileData.role.slice(1) : 'N/A';
     });
   </script>
 </body>

@@ -1,0 +1,264 @@
+:root {
+  --pup-maroon: #800000;
+  --pup-gold: #FFD700;
+  --light-gray: #f5f5f5;
+  --dark-gray: #333;
+  --white: #ffffff;
+  --hover-maroon: #5a0000;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background-color: var(--light-gray);
+  color: var(--dark-gray);
+  line-height: 1.6;
+}
+
+header {
+  background-color: var(--pup-maroon);
+  color: var(--white);
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--pup-gold);
+}
+
+nav a {
+  color: var(--white);
+  margin-left: 1.5rem;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+nav a:hover {
+  color: var(--pup-gold);
+}
+
+.container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 0 2rem;
+  background: var(--white);
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+h2 {
+  color: var(--pup-maroon);
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--pup-gold);
+  padding-bottom: 0.5rem;
+  text-align: center;
+}
+
+/* --- Scrollable container ONLY for subjects --- */
+.subject-scroll-container {
+  max-height: 550px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+/* --- Subject item layout --- */
+.subject-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.2rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #ddd;
+  gap: 1rem;
+}
+
+.subject-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.subject-details {
+  flex: 1;
+}
+
+.subject-details h3 {
+  color: var(--pup-maroon);
+  font-size: 1.1rem;
+  margin-bottom: 0.4rem;
+}
+
+.subject-details p {
+  font-size: 0.9rem;
+  color: #555;
+  margin: 0.2rem 0;
+}
+
+/* --- Button design --- */
+.btn {
+  background-color: var(--pup-maroon);
+  color: var(--white);
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-width: 110px;
+  text-align: center;
+  display: inline-block;
+}
+
+.btn:hover {
+  background-color: var(--hover-maroon);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+  transform: translateY(-1px);
+  color: white;
+}
+
+.btn-center {
+  display: block;
+  margin: 1.5rem auto 0;
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--pup-maroon);
+  border: 2px solid var(--pup-maroon);
+  box-shadow: none;
+}
+
+.btn-outline:hover {
+  background-color: var(--pup-maroon);
+  color: var(--white);
+}
+
+/* --- QR Box --- */
+.qr-box {
+  width: 280px;
+  height: 280px;
+  margin: 2rem auto;
+  border: 4px solid var(--pup-gold);
+  padding: 1rem;
+  border-radius: 8px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- Other styles --- */
+input, select, textarea {
+  width: 100%;
+  padding: 0.8rem;
+  margin: 0.8rem 0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+input[readonly] {
+  background-color: #f0f0f0;
+  cursor: not-allowed;
+}
+
+.form-group {
+  margin-bottom: 1.2rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-weight: 500;
+  color: var(--dark-gray);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.button-group {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.auth-container {
+  max-width: 600px;
+  width: 90%;
+  margin: 3rem auto;
+  background: var(--white);
+  padding: 2.5rem 3rem;
+  border-radius: 10px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.auth-page {
+  background: linear-gradient(135deg, var(--pup-maroon) 0%, #4b0000 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.auth-page h2 {
+  text-align: center;
+  color: var(--pup-maroon);
+}
+
+.link {
+  margin-top: 1.2rem;
+  display: block;
+  text-align: center;
+  color: var(--pup-maroon);
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.profile-item {
+  margin: 1rem 0;
+  padding: 1rem;
+  background-color: #fdfdfd;
+  border-left: 4px solid var(--pup-maroon);
+  border-radius: 4px;
+}
+
+/* --- Landscape Mode Adjustments --- */
+@media screen and (orientation: landscape) and (min-width: 768px) {
+  .container {
+    max-width: 1000px;
+  }
+
+  .subject-scroll-container {
+    max-height: 650px;
+  }
+
+  .auth-container {
+    max-width: 700px;
+  }
+}

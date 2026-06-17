@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mark Attendance | PUP Attendance System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .attendance-container {
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 30px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .attendance-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .attendance-header h1 {
+      color: #800000;
+      margin-bottom: 10px;
+    }
+
+    .subject-info {
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid #800000;
+    }
+
+    .subject-info h3 {
+      color: #800000;
+      margin: 0 0 10px 0;
+    }
+
+    .subject-info p {
+      margin: 5px 0;
+      color: #333;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: bold;
+      color: #800000;
+      margin-bottom: 5px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #800000;
+    }
+
+    .submit-btn {
+      background: #800000;
+      color: white;
+      padding: 15px 30px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.2s;
+    }
+
+    .submit-btn:hover {
+      background: #a52a2a;
+    }
+
+    .error-message {
+      background: #fee;
+      color: #c33;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid #c33;
+    }
+
+    .success-message {
+      background: #efe;
+      color: #3c3;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 4px solid #3c3;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+    }
+
+    .loading-spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #800000;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 10px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="attendance-container">
+    <div class="attendance-header">
+      <h1>📋 Mark Attendance</h1>
+      <p>Scan QR code to mark your attendance</p>
+    </div>
+
+    <div id="error-message" class="error-message" style="display: none;"></div>
+    <div id="success-message" class="success-message" style="display: none;"></div>
+
+    <div id="loading" class="loading" style="display: none;">
+      <div class="loading-spinner"></div>
+      <p>Validating QR code...</p>
+    </div>
+
+    <div id="attendance-form">
+      <div class="subject-info">
+        <h3 id="subject-name">Loading subject information...</h3>
+        <p><strong>Subject Code:</strong> <span id="subject-code">-</span></p>
+        <p><strong>QR Code:</strong> <span id="qr-code-display">-</span></p>
+      </div>
+
+      <form id="attendanceForm" onsubmit="submitAttendance(event)">
+        <div class="form-group">
+          <label for="student-number">Student Number:</label>
+          <input type="text" id="student-number" name="student_number" required placeholder="Enter your student number">
+        </div>
+
+        <div class="form-group">
+          <label for="student-name">Full Name:</label>
+          <input type="text" id="student-name" name="student_name" required placeholder="Enter your full name">
+        </div>
+
+        <button type="submit" class="submit-btn">Submit Attendance</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Get QR code and subject from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const qrCode = urlParams.get('qr');
+    const subjectCode = urlParams.get('subject');
+
+    // Validate QR code on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      if (!qrCode) {
+        showError('Invalid QR code. Please scan a valid QR code.');
+        return;
+      }
+
+      // Show loading
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('attendance-form').style.display = 'none';
+
+      // Validate QR code and get subject info
+      validateQRCode(qrCode);
+    });
+
+    async function validateQRCode(qrCode) {
+      try {
+        // For now, we'll just show the subject info from URL
+        // In a real implementation, you'd validate against the database
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('attendance-form').style.display = 'block';
+
+        if (subjectCode) {
+          document.getElementById('subject-name').textContent = getSubjectName(subjectCode);
+          document.getElementById('subject-code').textContent = subjectCode;
+          document.getElementById('qr-code-display').textContent = qrCode.substring(0, 20) + '...';
+        } else {
+          document.getElementById('subject-name').textContent = 'Unknown Subject';
+          document.getElementById('subject-code').textContent = 'N/A';
+          document.getElementById('qr-code-display').textContent = qrCode.substring(0, 20) + '...';
+        }
+      } catch (error) {
+        console.error('Error validating QR code:', error);
+        showError('Error validating QR code. Please try again.');
+      }
+    }
+
+    function getSubjectName(code) {
+      const subjects = {
+        'IM 101': 'Information Management',
+        'QMMS 201': 'Quantitative Methods with Modeling and Simulation'
+      };
+      return subjects[code] || 'Unknown Subject';
+    }
+
+    async function submitAttendance(event) {
+      event.preventDefault();
+
+      const studentNumber = document.getElementById('student-number').value.trim();
+      const studentName = document.getElementById('student-name').value.trim();
+
+      if (!studentNumber || !studentName) {
+        showError('Please fill in all fields.');
+        return;
+      }
+
+      // Show loading
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('attendance-form').style.display = 'none';
+      document.getElementById('error-message').style.display = 'none';
+      document.getElementById('success-message').style.display = 'none';
+
+      try {
+        const response = await fetch('api/submit_attendance.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            qr_code: qrCode,
+            student_number: studentNumber,
+            student_name: studentName
+          })
+        });
+
+        const result = await response.json();
+
+        document.getElementById('loading').style.display = 'none';
+
+        if (result.success) {
+          showSuccess(`Attendance submitted successfully for ${result.subject} (${result.subject_code}) at ${new Date(result.submission_time).toLocaleString()}`);
+          
+          // Clear form
+          document.getElementById('student-number').value = '';
+          document.getElementById('student-name').value = '';
+          
+          // Redirect after 3 seconds
+          setTimeout(() => {
+            window.location.href = 'student-dashboard.html';
+          }, 3000);
+        } else {
+          document.getElementById('attendance-form').style.display = 'block';
+          showError(result.message);
+        }
+      } catch (error) {
+        console.error('Error submitting attendance:', error);
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('attendance-form').style.display = 'block';
+        showError('Error submitting attendance. Please try again.');
+      }
+    }
+
+    function showError(message) {
+      document.getElementById('error-message').textContent = message;
+      document.getElementById('error-message').style.display = 'block';
+      document.getElementById('success-message').style.display = 'none';
+    }
+
+    function showSuccess(message) {
+      document.getElementById('success-message').textContent = message;
+      document.getElementById('success-message').style.display = 'block';
+      document.getElementById('error-message').style.display = 'none';
+    }
+  </script>
+</body>
+</html>

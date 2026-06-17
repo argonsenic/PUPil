@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Edit Profile - PUP Attendance System</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="js/api.js"></script>
+</head>
+<body>
+  <header>
+    <div class="logo">PUP Attendance System</div>
+    <nav>
+      <a href="main.html">My Subjects</a>
+      <a href="profile.html">My Profile</a>
+      <a href="login.html">Logout</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div class="card">
+      <h2>Edit Your Profile</h2>
+      <form id="profileForm">
+        <div class="form-group">
+          <label for="firstName">First Name</label>
+          <input type="text" id="firstName" name="firstName" required />
+        </div>
+
+        <div class="form-group">
+          <label for="lastName">Last Name</label>
+          <input type="text" id="lastName" name="lastName" required />
+        </div>
+
+        <div class="form-group">
+          <label for="middleName">Middle Name</label>
+          <input type="text" id="middleName" name="middleName" />
+        </div>
+
+        <div class="form-group">
+          <label for="course">Course</label>
+          <input type="text" id="course" name="course" required />
+        </div>
+
+        <div class="form-group">
+          <label for="yearLevel">Year Level</label>
+          <select id="yearLevel" name="yearLevel" required>
+            <option value="1">1st Year</option>
+            <option value="2">2nd Year</option>
+            <option value="3">3rd Year</option>
+            <option value="4">4th Year</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="section">Section</label>
+          <input type="text" id="section" name="section" />
+        </div>
+
+        <div class="form-group">
+          <label for="phoneNumber">Phone Number</label>
+          <input type="text" id="phoneNumber" name="phoneNumber" />
+        </div>
+
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" />
+        </div>
+
+        <div class="form-group">
+          <label for="password">New Password (leave blank to keep current)</label>
+          <input type="password" id="password" name="password" />
+        </div>
+
+        <div class="button-group">
+          <button type="submit" class="btn">Save Changes</button>
+          <a href="profile.html" class="btn btn-outline">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (!requireAuth()) {
+        return;
+      }
+
+      // Load current user data into form
+      const user = getUser();
+      if (user && user.profile) {
+        document.getElementById('firstName').value = user.profile.first_name || '';
+        document.getElementById('lastName').value = user.profile.last_name || '';
+        document.getElementById('middleName').value = user.profile.middle_name || '';
+        document.getElementById('course').value = user.profile.course || '';
+        document.getElementById('yearLevel').value = user.profile.year_level || '1';
+        document.getElementById('section').value = user.profile.section || '';
+        document.getElementById('phoneNumber').value = user.profile.phone_number || '';
+        document.getElementById('username').value = user.username || '';
+      }
+    });
+
+    document.getElementById('profileForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const user = getUser();
+      if (!user || !user.profile) {
+        alert('❌ User not authenticated');
+        return;
+      }
+
+      // Collect form data
+      const updateData = {
+        first_name: document.getElementById('firstName').value,
+        last_name: document.getElementById('lastName').value,
+        middle_name: document.getElementById('middleName').value,
+        course: document.getElementById('course').value,
+        year_level: parseInt(document.getElementById('yearLevel').value),
+        section: document.getElementById('section').value,
+        phone_number: document.getElementById('phoneNumber').value,
+        username: document.getElementById('username').value
+      };
+
+      // Only include password if it's provided
+      const password = document.getElementById('password').value;
+      if (password && password.length > 0) {
+        updateData.password = password;
+      }
+
+      try {
+        const result = await updateStudentProfile(user.profile.id, updateData);
+
+        if (result.success) {
+          // Update localStorage with new data
+          user.profile = {
+            ...user.profile,
+            first_name: updateData.first_name,
+            last_name: updateData.last_name,
+            middle_name: updateData.middle_name,
+            course: updateData.course,
+            year_level: updateData.year_level,
+            section: updateData.section,
+            phone_number: updateData.phone_number
+          };
+          user.username = updateData.username;
+          user.full_name = `${updateData.first_name} ${updateData.last_name}`;
+          
+          storeUser(user);
+          
+          alert('✅ Profile updated successfully!');
+          window.location.href = 'profile.html';
+        } else {
+          alert('❌ ' + result.message);
+        }
+      } catch (error) {
+        console.error('Profile update error:', error);
+        alert('❌ Failed to update profile. Please try again.');
+      }
+    });
+  </script>
+</body>
+</html>

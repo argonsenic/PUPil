@@ -318,7 +318,22 @@
           })
         });
 
-        const result = await response.json();
+        // Check response content type
+        const contentType = response.headers.get('content-type');
+        console.log('Response content type:', contentType);
+        
+        // Get raw response text first
+        const responseText = await response.text();
+        console.log('Raw response:', responseText);
+        
+        // Try to parse as JSON
+        let result;
+        try {
+          result = JSON.parse(responseText);
+        } catch (e) {
+          console.error('Failed to parse JSON:', e);
+          throw new Error('Server returned invalid JSON: ' + responseText.substring(0, 100));
+        }
 
         document.getElementById('loading').style.display = 'none';
 

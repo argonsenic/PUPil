@@ -258,7 +258,8 @@
 
       subjectData.records.forEach(record => {
         const statusClass = record.status ? `status-${record.status.toLowerCase()}` : '';
-        const submissionTime = new Date(record.submission_time).toLocaleString();
+        // Convert UTC timestamp to local time
+        const submissionTime = new Date(record.submission_time + 'Z').toLocaleString();
         
         tableHTML += `
           <tr>

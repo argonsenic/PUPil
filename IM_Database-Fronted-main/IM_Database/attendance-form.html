@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mark Attendance | PUP Attendance System</title>
+  <title>Mark Attendance | PUP Attendance</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
     .attendance-container {
@@ -54,7 +54,9 @@
       margin-bottom: 5px;
     }
 
-    .form-group input {
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
       width: 100%;
       padding: 12px;
       border: 1px solid #ddd;
@@ -63,9 +65,16 @@
       box-sizing: border-box;
     }
 
-    .form-group input:focus {
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
       outline: none;
       border-color: #800000;
+    }
+
+    .form-group input[readonly] {
+      background: #f5f5f5;
+      cursor: not-allowed;
     }
 
     .submit-btn {
@@ -84,22 +93,23 @@
       background: #a52a2a;
     }
 
-    .error-message {
-      background: #fee;
-      color: #c33;
+    .message {
+      margin-top: 20px;
       padding: 15px;
       border-radius: 8px;
-      margin-bottom: 20px;
-      border-left: 4px solid #c33;
+      text-align: center;
     }
 
-    .success-message {
+    .message.success {
       background: #efe;
       color: #3c3;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
       border-left: 4px solid #3c3;
+    }
+
+    .message.error {
+      background: #fee;
+      color: #c33;
+      border-left: 4px solid #c33;
     }
 
     .loading {
@@ -124,14 +134,22 @@
   </style>
 </head>
 <body>
+  <header>
+    <div class="logo">PUPil Attendance Monitoring System</div>
+    <nav>
+      <a href="student-dashboard.html">Back to Dashboard</a>
+      <a href="profile.html">My Profile</a>
+    </nav>
+  </header>
+
   <div class="attendance-container">
     <div class="attendance-header">
       <h1>📋 Mark Attendance</h1>
       <p>Scan QR code to mark your attendance</p>
     </div>
 
-    <div id="error-message" class="error-message" style="display: none;"></div>
-    <div id="success-message" class="success-message" style="display: none;"></div>
+    <div id="error-message" class="message error" style="display: none;"></div>
+    <div id="success-message" class="message success" style="display: none;"></div>
 
     <div id="loading" class="loading" style="display: none;">
       <div class="loading-spinner"></div>
@@ -145,7 +163,10 @@
         <p><strong>QR Code:</strong> <span id="qr-code-display">-</span></p>
       </div>
 
-      <form id="attendanceForm" onsubmit="submitAttendance(event)">
+      <form id="attendanceForm">
+        <input type="hidden" id="qrCodeInput" name="qr_code">
+        <input type="hidden" id="subjectCodeInput" name="subject_code">
+
         <div class="form-group">
           <label for="student-number">Student Number:</label>
           <input type="text" id="student-number" name="student_number" required placeholder="Enter your student number">
@@ -156,7 +177,22 @@
           <input type="text" id="student-name" name="student_name" required placeholder="Enter your full name">
         </div>
 
+        <div class="form-group">
+          <label for="statusInput">Attendance Status:</label>
+          <select id="statusInput" required>
+            <option value="present">Present</option>
+            <option value="late">Late</option>
+            <option value="absent">Absent</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="remarksInput">Remarks / Reason:</label>
+          <textarea id="remarksInput" rows="3" placeholder="Optional remarks"></textarea>
+        </div>
+
         <button type="submit" class="submit-btn">Submit Attendance</button>
+        <div id="attendanceMessage" class="message"></div>
       </form>
     </div>
   </div>
@@ -193,10 +229,13 @@
           document.getElementById('subject-name').textContent = getSubjectName(subjectCode);
           document.getElementById('subject-code').textContent = subjectCode;
           document.getElementById('qr-code-display').textContent = qrCode.substring(0, 20) + '...';
+          document.getElementById('qrCodeInput').value = qrCode;
+          document.getElementById('subjectCodeInput').value = subjectCode;
         } else {
           document.getElementById('subject-name').textContent = 'Unknown Subject';
           document.getElementById('subject-code').textContent = 'N/A';
           document.getElementById('qr-code-display').textContent = qrCode.substring(0, 20) + '...';
+          document.getElementById('qrCodeInput').value = qrCode;
         }
       } catch (error) {
         console.error('Error validating QR code:', error);
@@ -212,14 +251,17 @@
       return subjects[code] || 'Unknown Subject';
     }
 
-    async function submitAttendance(event) {
-      event.preventDefault();
+    document.getElementById('attendanceForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
 
+      const qrCode = document.getElementById('qrCodeInput').value;
       const studentNumber = document.getElementById('student-number').value.trim();
       const studentName = document.getElementById('student-name').value.trim();
+      const status = document.getElementById('statusInput').value;
+      const remarks = document.getElementById('remarksInput').value.trim();
 
-      if (!studentNumber || !studentName) {
-        showError('Please fill in all fields.');
+      if (!qrCode || !studentNumber || !studentName) {
+        showError('Please fill in all required fields.');
         return;
       }
 
@@ -238,7 +280,9 @@
           body: JSON.stringify({
             qr_code: qrCode,
             student_number: studentNumber,
-            student_name: studentName
+            student_name: studentName,
+            status: status,
+            remarks: remarks
           })
         });
 
@@ -252,6 +296,8 @@
           // Clear form
           document.getElementById('student-number').value = '';
           document.getElementById('student-name').value = '';
+          document.getElementById('statusInput').selectedIndex = 0;
+          document.getElementById('remarksInput').value = '';
           
           // Redirect after 3 seconds
           setTimeout(() => {
@@ -267,7 +313,7 @@
         document.getElementById('attendance-form').style.display = 'block';
         showError('Error submitting attendance. Please try again.');
       }
-    }
+    });
 
     function showError(message) {
       document.getElementById('error-message').textContent = message;

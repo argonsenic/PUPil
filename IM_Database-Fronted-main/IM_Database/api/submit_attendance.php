@@ -73,11 +73,11 @@ try {
         exit;
     }
     
-    // Insert attendance record
+    // Insert attendance record (student_id removed to avoid foreign key constraint)
     $insert_query = "INSERT INTO attendance_records 
-                     (qr_code_id, student_id, subject_id, student_number, student_name, ip_address) 
+                     (qr_code_id, subject_id, student_number, student_name, ip_address) 
                      VALUES (" . pg_escape_string($conn, $qr_data['id']) . ", 
-                     0, " . pg_escape_string($conn, $qr_data['subject_id']) . ", 
+                     " . pg_escape_string($conn, $qr_data['subject_id']) . ", 
                      '" . pg_escape_string($conn, $student_number) . "', 
                      '" . pg_escape_string($conn, $student_name) . "', 
                      '" . pg_escape_string($conn, $_SERVER['REMOTE_ADDR']) . "') RETURNING id";

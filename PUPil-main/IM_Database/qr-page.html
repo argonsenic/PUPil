@@ -39,17 +39,50 @@
     const subject = params.get("subject") || "No Subject Selected";
     const section = params.get("section") || "";
     const schedule = params.get("schedule") || "";
-
+    
     // Display details on page
     document.getElementById("subject-title").textContent = subject;
     document.getElementById("subject-section").textContent = section;
     document.getElementById("subject-schedule").textContent = schedule;
-
-    // Generate QR Code containing subject information
-    QRCode.toCanvas(document.getElementById("qrcode"), 
-      `Subject: ${subject}\nSection: ${section}\nSchedule: ${schedule}`, 
-      { width: 240, height: 240, margin: 1 }
-    );
+    
+  /**
+   * Generates a unique token that changes every 24 hours (daily)
+   * This prevents students from reusing yesterday's screenshots.
+   */
+    function generateDailyToken() {
+    const now = new Date();
+    // Get total days since Jan 1, 1970 UTC
+    const totalDays = Math.floor(now.getTime() / (1000 * 60 * 60 * 24));
+    
+    // A secret key to mix with the date (must match your attendance page secret)
+    const secretSalt = "PUP_ATTENDANCE_SECRET_2026"; 
+    
+    // Simple hash calculation to generate an unpredictable 6-digit token
+    const stringToHash = `${totalDays}_${secretSalt}`;
+    let hash = 0;
+    for (let i = 0; i < stringToHash.length; i++) {
+      hash = (hash << 5) - hash + stringToHash.charCodeAt(i);
+      hash |= 0; // Convert to 32bit integer
+    }
+    return Math.abs(hash % 900000 + 100000); // Ensures a 6-digit number
+    }
+    
+    // Generate the changing token
+    const dailyToken = generateDailyToken();
+    
+    // CHANGE THIS: Put the actual URL of your attendance form page here
+    const baseAttendanceUrl = "https://yourdomain.com";
+    
+    // Build the URL payload with parameters
+    // EncodeURIComponent handles spaces and special characters safely in URLs
+    const qrPayload = `${baseAttendanceUrl}?subject=${encodeURIComponent(subject)}&section=${encodeURIComponent(section)}&schedule=${encodeURIComponent(schedule)}&token=${dailyToken}`;
+    
+    // Generate the changing QR Code containing the link
+    QRCode.toCanvas(document.getElementById("qrcode"), qrPayload, { 
+    width: 240, 
+    height: 240, 
+    margin: 1 
+  });
   </script>
 </body>
 </html>

@@ -82,6 +82,7 @@
   <div class="profile-container">
     <div class="profile-header">
       <h1>👤 My Profile</h1>
+      <p>Student Information</p>
     </div>
 
     <div class="profile-info">
@@ -154,6 +155,12 @@
           const profile = user.profile || {};
           const isInstructor = user.role === 'instructor';
 
+          // Debug: Log all profile data
+          console.log('Full user data:', user);
+          console.log('Profile data:', profile);
+          console.log('Employee number:', profile.employee_number);
+          console.log('Student number:', profile.student_number);
+
           // Update UI with actual user data
           document.getElementById('full-name').textContent = user.full_name || 
             `${profile.first_name || ''} ${profile.middle_name || ''} ${profile.last_name || ''}`.trim() || 'N/A';
@@ -173,7 +180,7 @@
             document.getElementById('year-section').parentElement.style.display = 'none';
             // Update student number label to instructor ID
             document.getElementById('student-number').previousElementSibling.textContent = 'Instructor ID:';
-            document.getElementById('student-number').textContent = profile.employee_number || 'N/A';
+            document.getElementById('student-number').textContent = profile.employee_number || profile.student_number || 'N/A';
           } else {
             dashboardLink.href = 'student-dashboard.html';
             // Show student-specific fields
@@ -189,6 +196,11 @@
             document.getElementById('section').textContent = profile.section ? `Section ${profile.section}` : 'N/A';
             document.getElementById('year-section').textContent = profile.year_level && profile.section ? `${profile.year_level}-${profile.section}` : 'N/A';
           }
+          
+          // Debug: Log role detection
+          console.log('User role:', user.role);
+          console.log('Is instructor:', isInstructor);
+          console.log('Dashboard link href:', dashboardLink.href);
         } else {
           // Not logged in, redirect to login
           window.location.href = 'login.html';

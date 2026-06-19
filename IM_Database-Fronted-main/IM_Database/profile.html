@@ -113,12 +113,12 @@
 
       <div class="info-item">
         <label>Section:</label>
-        <span id="section">5</span>
+        <span id="section">Loading...</span>
       </div>
 
       <div class="info-item">
         <label>Year & Section:</label>
-        <span id="year-section">2-5</span>
+        <span id="year-section">Loading...</span>
       </div>
 
       <div class="info-item">
@@ -138,7 +138,7 @@
     </div>
 
     <div class="nav-buttons">
-      <a href="student-dashboard.html">Back to Dashboard</a>
+      <a id="dashboard-link" href="student-dashboard.html">Back to Dashboard</a>
       <a href="auth/Logout.php" class="logout">Logout</a>
     </div>
   </div>
@@ -153,19 +153,43 @@
         if (result.logged_in && result.user) {
           const user = result.user;
           const profile = user.profile || {};
+          const isInstructor = user.role === 'instructor';
 
           // Update UI with actual user data
           document.getElementById('full-name').textContent = user.full_name || 
             `${profile.first_name || ''} ${profile.middle_name || ''} ${profile.last_name || ''}`.trim() || 'N/A';
           document.getElementById('username').textContent = user.username || 'N/A';
-          document.getElementById('account-code').textContent = user.account_code || profile.student_number || 'N/A';
-          document.getElementById('course').textContent = profile.course || 'N/A';
-          document.getElementById('year-level').textContent = profile.year_level ? `${profile.year_level} Year` : 'N/A';
-          document.getElementById('section').textContent = profile.section ? `Section ${profile.section}` : 'N/A';
-          document.getElementById('year-section').textContent = profile.year_level && profile.section ? `${profile.year_level}-${profile.section}` : 'N/A';
-          document.getElementById('student-number').textContent = profile.student_number || 'N/A';
+          document.getElementById('account-code').textContent = user.account_code || 'N/A';
           document.getElementById('phone-number').textContent = profile.phone_number || 'N/A';
           document.getElementById('role').textContent = user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'N/A';
+
+          // Update dashboard link based on role
+          const dashboardLink = document.getElementById('dashboard-link');
+          if (isInstructor) {
+            dashboardLink.href = 'instructor-dashboard.html';
+            // Hide student-specific fields
+            document.getElementById('course').parentElement.style.display = 'none';
+            document.getElementById('year-level').parentElement.style.display = 'none';
+            document.getElementById('section').parentElement.style.display = 'none';
+            document.getElementById('year-section').parentElement.style.display = 'none';
+            // Update student number label to instructor ID
+            document.getElementById('student-number').previousElementSibling.textContent = 'Instructor ID:';
+            document.getElementById('student-number').textContent = profile.employee_number || 'N/A';
+          } else {
+            dashboardLink.href = 'student-dashboard.html';
+            // Show student-specific fields
+            document.getElementById('course').parentElement.style.display = 'block';
+            document.getElementById('year-level').parentElement.style.display = 'block';
+            document.getElementById('section').parentElement.style.display = 'block';
+            document.getElementById('year-section').parentElement.style.display = 'block';
+            // Update student number label
+            document.getElementById('student-number').previousElementSibling.textContent = 'Student Number:';
+            document.getElementById('student-number').textContent = profile.student_number || 'N/A';
+            document.getElementById('course').textContent = profile.course || 'N/A';
+            document.getElementById('year-level').textContent = profile.year_level ? `${profile.year_level} Year` : 'N/A';
+            document.getElementById('section').textContent = profile.section ? `Section ${profile.section}` : 'N/A';
+            document.getElementById('year-section').textContent = profile.year_level && profile.section ? `${profile.year_level}-${profile.section}` : 'N/A';
+          }
         } else {
           // Not logged in, redirect to login
           window.location.href = 'login.html';

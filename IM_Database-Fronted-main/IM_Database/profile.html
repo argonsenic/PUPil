@@ -180,7 +180,9 @@
             document.getElementById('year-section').parentElement.style.display = 'none';
             // Update student number label to instructor ID
             document.getElementById('student-number').previousElementSibling.textContent = 'Instructor ID:';
-            document.getElementById('student-number').textContent = profile.employee_number || profile.student_number || 'N/A';
+            // Try multiple field names for instructor ID
+            const instructorId = profile.employee_number || profile.student_number || profile.instructor_id || user.account_code || 'N/A';
+            document.getElementById('student-number').textContent = instructorId;
           } else {
             dashboardLink.href = 'student-dashboard.html';
             // Show student-specific fields

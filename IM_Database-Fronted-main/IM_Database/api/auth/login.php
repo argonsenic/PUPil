@@ -98,17 +98,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         
                     } elseif ($user['role'] === 'instructor') {
                         $profile_sql = "SELECT * FROM instructor_profiles WHERE account_id = '" . pg_escape_string($conn, $user['id']) . "'";
+                        error_log("Instructor profile SQL: " . $profile_sql);
+                        error_log("User ID: " . $user['id']);
                         $p_stmt = db_query($conn, $profile_sql);
                         if ($p_stmt === false) {
+                            error_log("Instructor profile query failed: " . db_error($conn));
                             throw new Exception('Failed to retrieve instructor profile: ' . db_error($conn));
                         }
                         $profile = db_fetch_assoc($p_stmt);
+                        error_log("Instructor profile result: " . ($profile ? "Found" : "Not found"));
                         
                         if ($profile) {
                             $_SESSION['profile'] = $profile;
                             $_SESSION['full_name'] = $profile['first_name'] . ' ' . $profile['last_name'];
                         } else {
                             // If no profile found, set default values
+                            error_log("No instructor profile found for account_id: " . $user['id']);
                             $_SESSION['full_name'] = $user['user_name'];
                         }
                         header("Location: ../instructor-dashboard.html");

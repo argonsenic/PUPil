@@ -179,8 +179,8 @@
             document.getElementById('section').parentElement.style.display = 'none';
             document.getElementById('year-section').parentElement.style.display = 'none';
             // Update student number label to instructor ID
-            document.getElementById('student-number').previousElementSibling.textContent = 'Instructor ID:';
-            document.getElementById('student-number').textContent = profile.employee_number || profile.student_number || 'N/A';
+            document.getElementById('employee-number').previousElementSibling.textContent = 'Instructor ID:';
+            document.getElementById('employee-number').textContent = profile.employee_number || profile.student_number || 'N/A';
           } else {
             dashboardLink.href = 'student-dashboard.html';
             // Show student-specific fields

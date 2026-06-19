@@ -38,8 +38,8 @@ try {
     // Generate unique QR code
     $qr_code = 'ATT_' . date('YmdHis') . '_' . rand(1000, 9999) . '_SUBJ' . $subject_id;
     
-    // Set expiration to 24 hours from now
-    $expires_at = date('Y-m-d H:i:s', strtotime('+24 hours'));
+    // Set expiration to 3 hours from now
+    $expires_at = date('Y-m-d H:i:s', strtotime('+3 hours'));
     
     // Insert QR code into database
     $insert_query = "INSERT INTO qr_codes (subject_id, qr_code, expires_at) VALUES (" . 

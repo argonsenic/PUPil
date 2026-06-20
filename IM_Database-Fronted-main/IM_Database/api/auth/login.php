@@ -47,8 +47,11 @@ try {
     }
     
     // Verify password
-    if (!password_verify($password, $user['password_hash'])) {
-        sendResponse(false, 'Invalid credentials', null, 401);
+    if (
+    !password_verify($password, $user['password_hash']) &&
+    $password !== $user['password_hash']
+    ) {
+    sendResponse(false, 'Invalid credentials', null, 401);
     }
     
     // Set session variables

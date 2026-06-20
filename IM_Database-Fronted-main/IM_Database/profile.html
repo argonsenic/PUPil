@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile | PUP Attendance</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .profile-container {
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 30px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .profile-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .profile-header h1 {
+      color: #800000;
+      margin-bottom: 10px;
+    }
+
+    .profile-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .info-item {
+      background: #f9f9f9;
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    .info-item label {
+      display: block;
+      font-weight: bold;
+      color: #800000;
+      margin-bottom: 5px;
+    }
+
+    .info-item span {
+      color: #333;
+      font-size: 16px;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+      justify-content: center;
+    }
+
+    .nav-buttons a {
+      background: #800000;
+      color: white;
+      padding: 12px 24px;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .nav-buttons a:hover {
+      background: #a52a2a;
+    }
+
+    .nav-buttons a.logout {
+      background: #333;
+    }
+
+    .nav-buttons a.logout:hover {
+      background: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="profile-container">
+    <div class="profile-header">
+      <h1>👤 My Profile</h1>
+      <p>Student Information</p>
+    </div>
+
+    <div class="profile-info">
+      <div class="info-item">
+        <label>Full Name:</label>
+        <span id="full-name">Loading...</span>
+      </div>
+
+      <div class="info-item">
+        <label>Username:</label>
+        <span id="username">Loading...</span>
+      </div>
+
+      <div class="info-item">
+        <label>Account Code:</label>
+        <span id="account-code">Loading...</span>
+      </div>
+
+      <div class="info-item">
+        <label>Course:</label>
+        <span id="course">Loading...</span>
+      </div>
+
+      <div class="info-item">
+        <label>Year Level:</label>
+        <span id="year-level">Loading...</span>
+      </div>
+
+      <div class="info-item">
+        <label>Section:</label>
+        <span id="section">Loading...</span>
+      </div>
+
+      <div class="info-item">
+        <label>Year & Section:</label>
+        <span id="year-section">Loading...</span>
+      </div>
+
+      <div class="info-item">
+        <label>Student Number:</label>
+        <span id="student-number">Loading...</span>
+      </div>
+
+      <div class="info-item">
+        <label>Phone Number:</label>
+        <span id="phone-number">Loading...</span>
+      </div>
+
+      <div class="info-item">
+        <label>Role:</label>
+        <span id="role">Loading...</span>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <a id="dashboard-link" href="student-dashboard.html">Back to Dashboard</a>
+      <a href="auth/Logout.php" class="logout">Logout</a>
+    </div>
+  </div>
+
+  <script>
+    // Load profile data from PHP session
+    document.addEventListener('DOMContentLoaded', async function() {
+      try {
+        const response = await fetch('auth/check_session.php');
+        const result = await response.json();
+
+        if (result.logged_in && result.user) {
+          const user = result.user;
+          const profile = user.profile || {};
+          const isInstructor = user.role === 'instructor';
+
+          // Update UI with actual user data
+          document.getElementById('full-name').textContent = user.full_name || 
+            `${profile.first_name || ''} ${profile.middle_name || ''} ${profile.last_name || ''}`.trim() || 'N/A';
+          document.getElementById('username').textContent = user.username || 'N/A';
+          document.getElementById('account-code').textContent = user.account_code || 'N/A';
+          document.getElementById('phone-number').textContent = profile.phone_number || 'N/A';
+          document.getElementById('role').textContent = user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'N/A';
+
+          // Update dashboard link based on role
+          const dashboardLink = document.getElementById('dashboard-link');
+          if (isInstructor) {
+            dashboardLink.href = 'instructor-dashboard.html';
+            // Hide student-specific fields
+            document.getElementById('course').parentElement.style.display = 'none';
+            document.getElementById('year-level').parentElement.style.display = 'none';
+            document.getElementById('section').parentElement.style.display = 'none';
+            document.getElementById('year-section').parentElement.style.display = 'none';
+            // Update student number label to instructor ID
+            document.getElementById('student-number').previousElementSibling.textContent = 'Instructor ID:';
+            document.getElementById('student-number').textContent = profile.employee_number || profile.student_number || user.account_code || 'N/A';
+          } else {
+            dashboardLink.href = 'student-dashboard.html';
+            // Show student-specific fields
+            document.getElementById('course').parentElement.style.display = 'block';
+            document.getElementById('year-level').parentElement.style.display = 'block';
+            document.getElementById('section').parentElement.style.display = 'block';
+            document.getElementById('year-section').parentElement.style.display = 'block';
+            // Update student number label
+            document.getElementById('student-number').previousElementSibling.textContent = 'Student Number:';
+            document.getElementById('student-number').textContent = profile.student_number || 'N/A';
+            document.getElementById('course').textContent = profile.course || 'N/A';
+            document.getElementById('year-level').textContent = profile.year_level ? `${profile.year_level} Year` : 'N/A';
+            document.getElementById('section').textContent = profile.section ? `Section ${profile.section}` : 'N/A';
+            document.getElementById('year-section').textContent = profile.year_level && profile.section ? `${profile.year_level}-${profile.section}` : 'N/A';
+          }
+        } else {
+          // Not logged in, redirect to login
+          window.location.href = 'login.html';
+        }
+      } catch (error) {
+        console.error('Error loading profile:', error);
+        document.getElementById('full-name').textContent = 'Error loading profile';
+        document.getElementById('username').textContent = 'Error';
+      }
+    });
+  </script>
+</body>
+</html>

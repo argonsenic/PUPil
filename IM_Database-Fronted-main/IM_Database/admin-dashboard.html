@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - PUP Attendance System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .dashboard-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .dashboard-header {
+      background: linear-gradient(135deg, #800000 0%, #a52a2a 100%);
+      color: white;
+      padding: 30px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .dashboard-header h1 {
+      margin: 0 0 10px 0;
+      font-size: 28px;
+    }
+
+    .dashboard-header p {
+      margin: 0;
+      opacity: 0.9;
+    }
+
+    .subjects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 25px;
+      margin-bottom: 30px;
+    }
+
+    .subject-card {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border-left: 5px solid #800000;
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+
+    .subject-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .subject-card h3 {
+      color: #800000;
+      margin: 0 0 15px 0;
+      font-size: 20px;
+    }
+
+    .subject-info {
+      margin-bottom: 15px;
+    }
+
+    .subject-info label {
+      font-weight: bold;
+      color: #333;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .subject-info span {
+      color: #555;
+    }
+
+    .instructor-info {
+      background: #fff5f5;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+    }
+
+    .instructor-info label {
+      font-weight: bold;
+      color: #800000;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .instructor-info span {
+      color: #333;
+      font-size: 16px;
+    }
+
+    .generate-qr-btn {
+      background: #800000;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 15px;
+      width: 100%;
+      transition: background 0.2s;
+    }
+
+    .generate-qr-btn:hover {
+      background: #a52a2a;
+    }
+
+    .dashboard-nav {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .dashboard-nav a {
+      background: #800000;
+      color: white;
+      padding: 10px 20px;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .dashboard-nav a:hover {
+      background: #a52a2a;
+    }
+
+    .dashboard-nav a.logout {
+      background: #333;
+    }
+
+    .dashboard-nav a.logout:hover {
+      background: #555;
+    }
+
+    .qr-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .qr-modal.active {
+      display: flex;
+    }
+
+    .qr-content {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      text-align: center;
+      max-width: 400px;
+    }
+
+    .qr-content h3 {
+      color: #800000;
+      margin-bottom: 20px;
+    }
+
+    .qr-code {
+      width: 200px;
+      height: 200px;
+      background: #f0f0f0;
+      margin: 20px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: #666;
+      cursor: default;
+    }
+
+    .qr-code img {
+      display: block;
+      margin: 0 auto;
+      width: 200px;
+      height: 200px;
+      cursor: pointer;
+    }
+
+    .close-modal {
+      background: #333;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <div class="dashboard-nav">
+      <a href="#" onclick="showAttendanceResponses()">View Attendance Responses</a>
+      <a href="auth/Logout.php" class="logout">Logout</a>
+    </div>
+
+    <div class="dashboard-header">
+      <h1>📚 Admin Dashboard</h1>
+      <p>Generate QR codes for student attendance</p>
+    </div>
+
+    <div class="subjects-grid">
+      <div class="subject-card">
+        <h3>Information Management</h3>
+        <div class="subject-info">
+          <label>Subject Code:</label>
+          <span>IM 101</span>
+        </div>
+        <div class="subject-info">
+          <label>Units:</label>
+          <span>3.0</span>
+        </div>
+        <div class="subject-info">
+          <label>Schedule:</label>
+          <span>MWF 8:00 AM - 10:00 AM</span>
+        </div>
+        <div class="instructor-info">
+          <label>Instructor:</label>
+          <span>PAYRA, MARISOL D.</span>
+        </div>
+        <button class="generate-qr-btn" onclick="generateQR(1, 'Information Management', 'IM 101')">Generate QR Code</button>
+      </div>
+
+      <div class="subject-card">
+        <h3>Quantitative Methods with Modeling and Simulation</h3>
+        <div class="subject-info">
+          <label>Subject Code:</label>
+          <span>QMMS 201</span>
+        </div>
+        <div class="subject-info">
+          <label>Units:</label>
+          <span>3.0</span>
+        </div>
+        <div class="subject-info">
+          <label>Schedule:</label>
+          <span>TTH 1:00 PM - 3:00 PM</span>
+        </div>
+        <div class="instructor-info">
+          <label>Instructor:</label>
+          <span>PAYRA, MARISOL D.</span>
+        </div>
+        <button class="generate-qr-btn" onclick="generateQR(2, 'Quantitative Methods with Modeling and Simulation', 'QMMS 201')">Generate QR Code</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="qr-modal" id="qrModal">
+    <div class="qr-content">
+      <h3 id="qrSubject">Subject Name</h3>
+      <div class="qr-code" id="qrCode">
+        QR Code will be generated here
+      </div>
+      <p>Scan this QR code to mark attendance</p>
+      <button class="close-modal" onclick="closeQRModal()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    async function generateQR(subjectId, subjectName, subjectCode) {
+      try {
+        const response = await fetch('api/generate_qr.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ subject_id: subjectId })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          const modal = document.getElementById('qrModal');
+          const subjectTitle = document.getElementById('qrSubject');
+          const qrCode = document.getElementById('qrCode');
+
+          subjectTitle.textContent = subjectName;
+
+          // Render clickable QR image with expiration info
+          const qrImgSrc = result.qr_url;
+          qrCode.innerHTML = `
+            <a href="${result.attendance_url}" target="_blank" rel="noopener">
+              <img src="${qrImgSrc}" alt="QR Code">
+            </a>
+            <p style="margin-top: 10px; font-size: 12px; color: #666;">
+              Expires: ${new Date(result.expires_at).toLocaleString()}
+            </p>
+          `;
+
+          // Prevent background scrolling while modal is open
+          document.body.style.overflow = 'hidden';
+          modal.classList.add('active');
+          
+          // Store current QR code info for attendance tracking
+          localStorage.setItem('currentQRCode', result.qr_code);
+          localStorage.setItem('currentSubjectId', subjectId);
+          localStorage.setItem('currentSubjectCode', subjectCode);
+        } else {
+          alert('Failed to generate QR code: ' + result.message);
+        }
+      } catch (error) {
+        console.error('Error generating QR code:', error);
+        alert('Error generating QR code. Please try again.');
+      }
+    }
+
+    function closeQRModal() {
+      document.getElementById('qrModal').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    async function showAttendanceResponses() {
+      try {
+        const response = await fetch('api/get_attendance.php');
+        const result = await response.json();
+        
+        if (result.success && result.attendance.length > 0) {
+          let responseText = 'Attendance Responses:\n\n';
+          result.attendance.forEach((record, index) => {
+            // Convert UTC timestamp to UTC+8 timezone
+            const utcDate = new Date(record.submission_time + 'Z');
+            const utc8Date = new Date(utcDate.getTime() + (8 * 60 * 60 * 1000)); // Add 8 hours
+            const submissionTime = utc8Date.toLocaleString('en-US', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+              hour12: true
+            });
+            
+            responseText += `${index + 1}. ${record.student_name} (${record.student_number})\n`;
+            responseText += `   Subject: ${record.subject_code} - ${record.subject_name}\n`;
+            responseText += `   Submission Time: ${submissionTime} (UTC+8)\n`;
+            responseText += `   Status: ${record.status}\n\n`;
+          });
+          
+          alert(responseText);
+        } else {
+          alert('No attendance responses yet.');
+        }
+      } catch (error) {
+        console.error('Error fetching attendance:', error);
+        alert('Error fetching attendance records. Please try again.');
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,8 +1,4 @@
 <?php
-/**
- * Generate Dynamic QR Code
- * Creates a QR code with 24-hour expiration for a specific subject
- */
 
 header('Content-Type: application/json');
 
@@ -39,7 +35,7 @@ try {
     $qr_code = 'ATT_' . date('YmdHis') . '_' . rand(1000, 9999) . '_SUBJ' . $subject_id;
     
     // Set expiration to 3 hours from now
-    $expires_at = date('Y-m-d H:i:s', strtotime('+3 hours'));
+    $expires_at = date('Y-m-d H:i:s', strtotime('+24 hours'));
     
     // Insert QR code into database
     $insert_query = "INSERT INTO qr_codes (subject_id, qr_code, expires_at) VALUES (" . 

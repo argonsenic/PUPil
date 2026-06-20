@@ -435,6 +435,112 @@
       document.body.style.overflow = '';
     }
 
+    async function showAttendanceResponses() {
+  try {
+    const response = await fetch('api/get_attendance.php');
+    const result = await response.json();
+
+    if (!result.success || !result.attendance.length) {
+      alert('No attendance records found.');
+      return;
+    }
+
+    const attendanceBySubject = {};
+
+    result.attendance.forEach(record => {
+      const key = `${record.subject_code} - ${record.subject_name}`;
+
+      if (!attendanceBySubject[key]) {
+        attendanceBySubject[key] = [];
+      }
+
+      attendanceBySubject[key].push(record);
+    });
+
+    window.adminAttendanceBySubject = attendanceBySubject;
+
+    const subjects = Object.keys(attendanceBySubject);
+    const firstSubject = subjects[0];
+
+    let tabsHTML = '<div class="subject-tabs">';
+
+    subjects.forEach((subject, index) => {
+      tabsHTML += `
+        <button
+          class="subject-tab ${index === 0 ? 'active' : ''}"
+          onclick="showAdminSubjectAttendance('${subject}')">
+          ${subject}
+        </button>
+      `;
+    });
+
+    tabsHTML += '</div>';
+
+    let rows = '';
+
+    attendanceBySubject[firstSubject].forEach(record => {
+      rows += `
+        <tr>
+          <td>${record.student_name}</td>
+          <td>${record.student_number}</td>
+          <td>${new Date(record.submission_time).toLocaleString()}</td>
+          <td class="status-present">${record.status}</td>
+        </tr>
+      `;
+    });
+
+    const oldModal = document.getElementById('attendanceModal');
+    if (oldModal) oldModal.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'attendanceModal';
+    modal.className = 'admin-modal';
+
+    modal.innerHTML = `
+      <div class="admin-modal-content">
+        <span class="admin-modal-close">&times;</span>
+
+        ${tabsHTML}
+
+        <div class="admin-attendance-display">
+          <h3>${firstSubject}</h3>
+
+          <table class="attendance-table">
+            <thead>
+              <tr>
+                <th>Student Name</th>
+                <th>Student Number</th>
+                <th>Submission Time</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+    modal.style.display = 'flex';
+
+    modal.querySelector('.admin-modal-close').onclick = () => {
+      modal.remove();
+    };
+
+    modal.onclick = (e) => {
+      if (e.target === modal) {
+        modal.remove();
+      }
+    };
+
+  } catch (error) {
+    console.error(error);
+    alert('Failed to load attendance records.');
+  }
+}
+    
     function showAdminSubjectAttendance(subjectKey) {
       const attendanceBySubject = window.adminAttendanceBySubject;
       if (!attendanceBySubject || !attendanceBySubject[subjectKey]) return;

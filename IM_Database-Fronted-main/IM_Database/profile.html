@@ -147,12 +147,16 @@
     // Load profile data directly from database
     document.addEventListener('DOMContentLoaded', async function() {
       try {
-        const response = await fetch('api/get_profile.php');
-        const result = await response.json();
+    
+          const response = await fetch('/IM_Database/api/get_profile.php');
+          if (!response.ok) {
+          throw new Error(`Server returned status ${response.status}`);
+          }
 
-        if (result.success) {
+          const result = await response.json();
+
+          if (result.success) {
           const profile = result.profile || {};
-          const isInstructor = result.role === 'instructor';
 
           // Debug: Log all profile data
           console.log('Profile data:', profile);

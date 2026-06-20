@@ -100,6 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $profile_sql = "SELECT * FROM instructor_profiles WHERE account_id = '" . pg_escape_string($conn, $user['id']) . "'";
                         $p_stmt = db_query($conn, $profile_sql);
                         if ($p_stmt === false) {
+                            error_log("Instructor profile query failed: " . db_error($conn));
                             throw new Exception('Failed to retrieve instructor profile');
                         }
                         $profile = db_fetch_assoc($p_stmt);
@@ -108,6 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $_SESSION['profile'] = $profile;
                             $_SESSION['full_name'] = $profile['first_name'] . ' ' . $profile['last_name'];
                         } else {
+                            error_log("No instructor profile found for account_id: " . $user['id']);
                             // If no profile found, set default values
                             $_SESSION['full_name'] = $user['user_name'];
                         }
